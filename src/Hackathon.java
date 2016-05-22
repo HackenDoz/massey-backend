@@ -16,6 +16,7 @@ public class Hackathon implements Serializable {
 	public final HashMap<String, User> users = new HashMap<>();
 	public final HashMap<String, User> administrators = new HashMap<>();
 	public final HashMap<Integer, Event> events = new HashMap<>();
+	public final HashMap<Integer, Announcement> announcements = new HashMap<>();
 
 	public Hackathon(int id, String name, String location, long startTime, long endTime) {
 		this.id = id;

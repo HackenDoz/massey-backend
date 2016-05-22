@@ -1,6 +1,6 @@
 import java.io.Serializable;
 
-public class Event implements Serializable{
+public class Event implements Serializable {
 	public final int id;
 
 	public long startTime;
