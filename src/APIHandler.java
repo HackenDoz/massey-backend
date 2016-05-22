@@ -44,22 +44,25 @@ public class APIHandler implements HttpHandler {
 
 				JSONObject res = null;
 
-				switch(requestT) {
-					case "login":
-						res = login(object);
-						break;
-					case "register":
-						res =  register(object);
-						break;
-					case "hackathon/join":
-						res = hackathon_join(object);
-						break;
-					case "hackathon/id":
+				if (requestT.equals("login")){
+					res = login(object);
+				} else if (requestT.equals("register")){
+					res = register(object);
+				} else if (requestT.equals("hackathon/join")){
+					res = hackathon_join(object);
+				} else if (requestT.equals("hackathon/create")){
+					res = create_hackathon(object);
+				} else if (requestT.equals("hackathon/events/create")){
+					res = create_event(object);
+				} else if (requestT.startsWith("hackathon/")){
+					try{
+						int hackathonID = Integer.parseInt(requestT.split("/")[1]);
+						object.put("id", hackathonID);
+
 						res = hackathon_id(object);
-						break;
-					case "hackathons":
-						res = hackathons(object);
-						break;
+					} catch (Exception ex){
+
+					}
 				}
 
 				if(res == null) {
