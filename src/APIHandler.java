@@ -52,8 +52,10 @@ public class APIHandler implements HttpHandler {
 					res = hackathon_join(object);
 				} else if (requestT.equals("hackathon/create")){
 					res = create_hackathon(object);
-				} else if (requestT.equals("hackathon/events/create")){
+				} else if (requestT.equals("hackathon/events/create")) {
 					res = create_event(object);
+				} else if (requestT.equals("hackathon/events/list")) {
+					res = list_events(object);
 				} else if (requestT.startsWith("hackathon/")){
 					try{
 						int hackathonID = Integer.parseInt(requestT.split("/")[1]);
@@ -91,6 +93,7 @@ public class APIHandler implements HttpHandler {
 
 		String username = data.getString("username");
 		String password = data.getString("password");
+		String deviceID = data.getString("device_id");
 		User user = server.users.get(username);
 		if(user == null) {
 			return new JSONObject("{\"code\":1, \"message\":\"Username/Password Incorrect\"}");
@@ -104,7 +107,7 @@ public class APIHandler implements HttpHandler {
 			id = random.nextInt() & 0x7FFFFFFF;
 		} while(server.session.containsKey(id));
 
-		server.session.put(id, new Session(id, user));
+		server.session.put(id, new Session(id, deviceID, user));
 
 		return new JSONObject("{\"code\":0, \"id\":" + id + "}");
 	}
@@ -291,4 +294,23 @@ public class APIHandler implements HttpHandler {
         return response;
     }
 
+	public JSONObject list_events(JSONObject data) {
+		int hackathon_id = data.getInt("id");
+		JSONArray response = new JSONArray();
+
+		for (Event ev : server.hackathons.get(hackathon_id).events.values()) {
+			JSONObject obj = new JSONObject();
+			obj.put("name", ev.name);
+			obj.put("description", ev.description);
+			obj.put("start_time", ev.startTime);
+			obj.put("end_time", ev.endTime);
+
+			response.put(obj);
+		}
+
+		JSONObject res = new JSONObject();
+		res.put("events", response);
+
+		return res;
+	}
 }
