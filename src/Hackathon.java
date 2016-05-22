@@ -7,6 +7,7 @@ public class Hackathon implements Serializable {
     public final int id;
 	public String name;
 	public String description;
+	public String location;
     public long startTime;
     public long endTime;
 
@@ -16,9 +17,10 @@ public class Hackathon implements Serializable {
 	public final HashMap<String, User> administrators = new HashMap<>();
 	public final HashMap<Integer, Event> events = new HashMap<>();
 
-	public Hackathon(int id, String name, long startTime, long endTime) {
+	public Hackathon(int id, String name, String location, long startTime, long endTime) {
 		this.id = id;
 		this.name = name;
+		this.location = location;
         this.startTime = startTime;
         this.endTime = endTime;
 		this.description = "";

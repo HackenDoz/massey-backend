@@ -56,6 +56,8 @@ public class APIHandler implements HttpHandler {
 					res = create_event(object);
 				} else if (requestT.equals("hackathon/events/list")) {
 					res = list_events(object);
+				} else if (requestT.equals("hackathons")){
+					res = list_hackathons();
 				} else if (requestT.startsWith("hackathon/")){
 					try{
 						int hackathonID = Integer.parseInt(requestT.split("/")[1]);
@@ -226,6 +228,7 @@ public class APIHandler implements HttpHandler {
 	public JSONObject create_hackathon(JSONObject data){
         String name = data.getString("hackathon_name");
         String description = data.getString("hackathon_description");
+        String location = data.getString("location");
         int sessionID = data.getInt("session_id");
         long startTime = data.getLong("start_time");
         long endTime = data.getLong("end_time");
@@ -236,7 +239,7 @@ public class APIHandler implements HttpHandler {
             if (name != null && description != null && startTime != 0 && endTime != 0) {
                 int hackathonID = server.hackathons.size();
                 server.hackathons.put(hackathonID,
-                        new Hackathon(hackathonID, name, startTime, endTime));
+                        new Hackathon(hackathonID, name, location, startTime, endTime));
 
                 server.hackathons.get(hackathonID).owner = server.session.get(sessionID).user.username;
                 server.hackathons.get(hackathonID).administrators.put(
@@ -312,5 +315,40 @@ public class APIHandler implements HttpHandler {
 		res.put("events", response);
 
 		return res;
+	}
+//
+//	public JSONObject create_announcement(JSONObject data) {
+//		if(!data.has("session_id")) {
+//			return new JSONObject().put("code", 1).put("message", "No session id");
+//		}
+//
+//		int session = data.getInt("session_id");
+//		User user = server.users.get(session);
+//		if(user == null) {
+//			return new JSONObject().put("code", 1).put("message", "Invalid session id");
+//		}
+//
+//
+//	}
+
+	public JSONObject list_hackathons(){
+		JSONArray hacks = new JSONArray();
+
+		for (Hackathon hh : server.hackathons.values()){
+			JSONObject obj = new JSONObject();
+
+            obj.put("name", hh.name);
+            obj.put("description", hh.description);
+            obj.put("start_time", hh.startTime);
+            obj.put("end_time", hh.endTime);
+            obj.put("location", hh.location);
+
+            hacks.put(obj);
+		}
+
+        JSONObject response = new JSONObject();
+        response.put("hackathons", hacks);
+
+        return response;
 	}
 }
