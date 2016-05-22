@@ -10,7 +10,10 @@ public class Hackathon implements Serializable {
     public long startTime;
     public long endTime;
 
-	public final HashMap<Integer, User> users = new HashMap<>();
+	public String owner;
+
+	public final HashMap<String, User> users = new HashMap<>();
+	public final HashMap<String, User> administrators = new HashMap<>();
 	public final HashMap<Integer, Event> events = new HashMap<>();
 
 	public Hackathon(int id, String name, long startTime, long endTime) {

@@ -49,7 +49,7 @@ public class APIHandler implements HttpHandler {
 						res = login(object);
 						break;
 					case "register":
-						res = register(object);
+						res =  register(object);
 						break;
 					case "hackathon/join":
 						res = hackathon_join(object);
@@ -130,20 +130,28 @@ public class APIHandler implements HttpHandler {
 
 	public JSONObject hackathon_join(JSONObject data){
         String username = data.getString("username");
+        int sessionID = data.getInt("session_id");
         int hackID = data.getInt("hackathon_id");
 
         JSONObject response = new JSONObject();
 
         if (server.users.containsKey(username)){
-            if (server.hackathons.containsKey(hackID)){
-                server.users.get(username).joinedHackathons.put(hackID, server.hackathons.get(hackID));
-                server.hackathons.get(hackID).users.put(server.users.get(username).id, server.users.get(username));
+            if (server.session.containsKey(sessionID) &&
+                    server.session.get(sessionID).user.username.equals(username)) {
 
-                response.put("code", 0);
-                response.put("message", "User successfully joined hackathon");
+                if (server.hackathons.containsKey(hackID)) {
+                    server.users.get(username).joinedHackathons.put(hackID, server.hackathons.get(hackID));
+                    server.hackathons.get(hackID).users.put(username, server.users.get(username));
+
+                    response.put("code", 0);
+                    response.put("message", "User successfully joined hackathon");
+                } else {
+                    response.put("code", 1);
+                    response.put("message", "Hackathon does not exist");
+                }
             } else {
                 response.put("code", 1);
-                response.put("message", "Hackathon does not exist");
+                response.put("message", "Invalid session key.");
             }
         } else {
             response.put("code", 1);
@@ -212,17 +220,30 @@ public class APIHandler implements HttpHandler {
 	public JSONObject create_hackathon(JSONObject data){
         String name = data.getString("hackathon_name");
         String description = data.getString("hackathon_description");
+        int sessionID = data.getInt("session_id");
         long startTime = data.getLong("start_time");
         long endTime = data.getLong("end_time");
 
         JSONObject response = new JSONObject();
 
-        if (name != null && description != null && startTime != 0 && endTime != 0){
-            response.put("code", 0);
-            response.put("message", "Hackathon successfully created.");
-        } else {
-            response.put("code", 1);
-            response.put("message", "Insufficient/Invalid data provided.");
+        if (server.session.containsKey(sessionID)) {
+            if (name != null && description != null && startTime != 0 && endTime != 0) {
+                int hackathonID = server.hackathons.size();
+                server.hackathons.put(hackathonID,
+                        new Hackathon(hackathonID, name, startTime, endTime));
+
+                server.hackathons.get(hackathonID).owner = server.session.get(sessionID).user.username;
+                server.hackathons.get(hackathonID).administrators.put(
+                        server.session.get(sessionID).user.username,
+                        server.users.get(server.session.get(sessionID).user.username)
+                );
+
+                response.put("code", 0);
+                response.put("message", "Hackathon successfully created.");
+            } else {
+                response.put("code", 1);
+                response.put("message", "Insufficient/Invalid data provided.");
+            }
         }
 
         return response;
@@ -230,6 +251,7 @@ public class APIHandler implements HttpHandler {
 
     public JSONObject create_event(JSONObject data){
         int hackathon_id = data.getInt("hackathon_id");
+        int sessionID = data.getInt("session_id");
         String name = data.getString("event_name");
         String description = data.getString("event_description");
         long startTime = data.getLong("start_time");
@@ -239,13 +261,25 @@ public class APIHandler implements HttpHandler {
 
         if (server.hackathons.containsKey(hackathon_id)){
             int eventID = server.hackathons.get(hackathon_id).events.size();
-            server.hackathons.get(hackathon_id).events.put(
-                    eventID,
-                    new Event(eventID, startTime, endTime, name, description)
-            );
 
-            response.put("code", 0);
-            response.put("message", "Event added successfully.");
+            if (server.session.containsKey(sessionID)) {
+				String username = server.session.get(sessionID).user.username;
+                if (server.hackathons.get(hackathon_id).administrators.containsKey(username)) {
+					server.hackathons.get(hackathon_id).events.put(
+							eventID,
+							new Event(eventID, startTime, endTime, name, description)
+					);
+
+					response.put("code", 0);
+					response.put("message", "Event added successfully.");
+				} else {
+					response.put("code", 1);
+					response.put("message", "User not authorized.");
+				}
+            } else {
+                response.put("code", 1);
+                response.put("message", "Invalid session key.");
+            }
         } else {
             response.put("code", 1);
             response.put("message", "Hackathon not found.");
