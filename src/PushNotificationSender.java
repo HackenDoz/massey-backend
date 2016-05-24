@@ -10,7 +10,7 @@ import java.nio.charset.Charset;
 public class PushNotificationSender {
 	public Hackathon hackathon;
 	public transient final Server server;
-	public static final String authKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJiMDgyOWQ5Yy0zNTAwLTQ5OTItYmIxNC00NWNlYjFjMjQxODQifQ.nJNYBVFQEqiPZe8Wh842ZEDbuK9EBblY-g1_tCaqzK4";
+	public static final String authKey = ""; //Romoved for security reasons
 
 	public PushNotificationSender(Hackathon hackathon, Server server){
 		this.hackathon = hackathon;
